@@ -15,6 +15,35 @@ export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  // Touch event handlers for swipe detection
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextPage();
+    } else if (isRightSwipe) {
+      prevPage();
+    }
+  };
+
   const toggleLanguage = () => {
     setLang(lang === "mi" ? "en" : "mi");
   };
@@ -74,15 +103,15 @@ export default function Home() {
     );
   }
   return (
-    <div className="min-h-screen h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-4 flex">
+    <div className="min-h-dvh h-dvh bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-4 flex">
       <div className="max-w-4xl mx-auto grow flex flex-col">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-3">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">{story.title.en}</h1>
           <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <span>
+            {/* <span>
               Page {currentPage + 1} of {story.pages.length}
-            </span>
+            </span> */}
             <div className="flex gap-1">
               {story.pages.map((_, index) => (
                 <div
@@ -96,7 +125,12 @@ export default function Home() {
           </div>
         </div>
         {/* Main Story Card */}
-        <div className="shadow-2xl rounded-2xl overflow-hidden p-0 grow flex flex-col">
+        <div 
+          className="shadow-2xl rounded-2xl overflow-hidden p-0 grow flex flex-col"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {/* Story Image */}
           <div className="relative w-full aspect-[4/3] overflow-hidden">
             <img
@@ -114,7 +148,7 @@ export default function Home() {
           <div className="p-6 flex flex-col justify-between grow sm:min-h-72">
             <div className="">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">{story.title[lang]}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold">{story.title[lang]}</h2>
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={toggleLanguage}

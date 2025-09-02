@@ -201,6 +201,16 @@ export default function Home() {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
+            {currentPage === story.pages.length - 1 && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  asChild
+                  className="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600"
+                >
+                  <a href="/game">Play "Find Te Rimu"</a>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

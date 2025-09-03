@@ -1,9 +1,14 @@
 import type { Route } from "./+types/home";
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
-
-import { useState } from "react";
+import MatchingGame from "../components/ui/MatchingGame";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "TeRimu" }, { name: "description", content: "Story of TeRimu" }];
@@ -80,6 +85,19 @@ export default function Home() {
     setHasStarted(true);
     setIsPlaying(true);
   };
+  const location = useLocation();
+
+  useEffect(() => {
+  // если пришли из игры
+    const startPage = (location.state as any)?.startPage as number | undefined;
+    if (startPage != null) {
+      setHasStarted(true);
+      const idx = story.pages.findIndex(p => p.id === startPage);
+      setCurrentPage(idx >= 0 ? idx : 0);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   if (!hasStarted) {
     return (
@@ -166,9 +184,21 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                {story.pages[currentPage].text[lang]}
-              </p>
+	      {story.pages[currentPage].game === "memory" ? (
+              	<div>
+		      <Link
+			to="game"
+			className="inline-block px-4 py-2 mt-4 bg-orange-500 text-white font-bold rounded-lg shadow hover:bg-orange-600 transition"
+			state={{ fromChapter: story.pages[currentPage].id }}
+		      > Play
+		      </Link>
+		    </div>
+	      		): (
+			    <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
+			      {story.pages[currentPage].text[lang]}
+			    </p>
+			  )
+	      	}
             </div>
 
             {/* Navigation */}
@@ -201,16 +231,6 @@ export default function Home() {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
-            {currentPage === story.pages.length - 1 && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  asChild
-                  className="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600"
-                >
-                  <a href="/game">Play "Find Te Rimu"</a>
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -289,111 +309,119 @@ const story = {
     },
     {
       id: 7,
+      game: "memory", // пометка, что это не текст, а игра
+      text: {
+        en: "Mini-game: Match the cards to help the hero continue!",
+        mi: "Kēmu iti: Kimihia ngā kāri kia haere tonu te toa!",
+      }
+    },
+    {
+      id: 8,
       text: {
         en: "He has been around since days of old.",
         mi: "Mai anō, mai anō tana noho ki konei.",
       },
     },
     {
-      id: 8,
+      id: 9,
       text: {
         en: "He was here when our tipuna Tamatea, paddled up the river in his waka Tuwhenua.",
         mi: "I konei ia i te taetanga mai o tō mātou tipuna a Tamatea, i a ia e hoe ana i tōna waka a Tūwhenua.",
       },
     },
     {
-      id: 9,
+      id: 10,
       text: {
         en: "He was here when the beautiful wāhine bathed in the river.",
         mi: "I konei ia i te wā e kaukau ana ngā wāhine i te awa.",
       },
     },
     {
-      id: 10,
+      id: 11,
       text: {
         en: "He was here when the soldiers rode into battle of Te Tarata.",
         mi: "I konei ia i te urutomokanga a ngā hoia ki te pakanga o Te Tarata.",
       },
     },
     {
-      id: 11,
+      id: 12,
       text: {
         en: "He was here when a young Aroha sat on the rivers’ edge watching as a log floated upstream of the Waioweka river.",
         mi: "I konei ia i te wā e noho ana a Aroha ki ngā tahataha o te awa e tiro ana ki te poro rākau e pōtere ana i te awa o Waioweka.",
       },
     },
     {
-      id: 12,
+      id: 13,
       text: {
         en: "Bewildered she sat, confused as can be. “Are my eyes deceiving me?” “How is that possible?” “How can that be?” Did that knobbly old log just wink at me?",
         mi: "He pōkīkī tana noho, he pōkaikaha tonu. “E hika, kei te tika taku titiro?” “E tareka ana?” “E pēhea nei?” “I kemo mai taua poro rākau tawhito, pakoki ki ahau?”",
       },
     },
     {
-      id: 13,
+      id: 14,
       text: {
         en: "The knobbly old log slowly turned towards her. Inching closer and closer. A terrified Aroha screams out with fright, Aiiiii! Stunned, astounded, eyes ablaze. The memories awoken of stories very seldom told.",
         mi: "I āta huri te poro rākau tawhito, pakoki ki a ia.  Ka whakatata ake, ka whakatata ake. Kōtore whererei te Aroha rā. “Aiiiii!!” tana tīwaharoa. Ka pūkanakana, ka whākanakana ngā whatu. Ka maumaharatia ngā pūrākau kāore i tino kōrerotia.",
       },
     },
     {
-      id: 14,
+      id: 15,
       text: {
         en: "Te Rimu the taniwha, who transforms at will, from a gigantic old log to a slippery, slithery grandpa eel. Looking ill of health and oh so frail.",
         mi: "Te Rimu te taniwha, ka huri hei poro rākau kaitā tawhito ki tētahi tuna pākehokeho, pāhekeheke, koroua te āhua.  He kōpīpī, he hōngoingoi, auē taukuri e.",
       },
     },
     {
-      id: 15,
+      id: 16,
       text: {
         en: "“It’s a sign! It’s a warning!”, hushed whispers all around. Filled with wonder and astonishment, some with knees knocking in fear. With a voice as deep as the mysterious depths of Hinerae itself, And as warm as the basking waters of Oamokura The old taniwha whispers, “The river and I are one and the same”. “Please help” he pleads, all sad and forlorn.",
         mi: "“He tohu! He whakatūpato!”, te karanga a ngā pakeke. Ka tere mai te iwi, ētahi ka wewehi, ētahi ka wiwini. Nō te tatanga a Te Rimu ki te pari ka mārama te karere. He āta tūtei i te iwi ka tomokia tōna rohe.",
       },
     },
     {
-      id: 16,
+      id: 17,
       text: {
         en: "His home once sparkling crystal clean. Now a junkyard jungle. Creaky, leaky, stinky old furniture and cans and packets all tossed aside. Once lush now bare, scarring landslides, deforestation. This can’t be right or is it just me?",
         mi: "Mārakerake te kite i te pūtake o te raru. He rawa whare, he para kei ngā tahataha rori. He horo whenua nā te whakarakenga o ngā rākau paina. Kāore tēnei i te pai, kua hē rānei ahau?",
       },
     },
     {
-      id: 17,
+      id: 18,
       text: {
         en: "One call to Tawa, our local heroine. The love for the land flowing strong from within. Ensuring the teachings of her elders remain.",
         mi: "Kotahi te karanga atu ki a Tawa, te kaitiaki, te tuawahine o Ngāti Ira tonu. Ko te aroha nui ki te whenua kei ōna iaia tonu. E mau tonu ana ki ngā kōrero tuku iho a rātou mā.",
       },
     },
     {
-      id: 18,
+      id: 19,
       text: {
         en: "With a plan of attack, neon jackets and protective blessings to start things right. One bag, two bags, three bags, four. This mammoth task, so huge and colossal.",
         mi: "Kua whakarite rautaki, kuhuna ngā koti haumaru me te whakarite karakia kia tika rawa ngā mahi. Ka timata te iwi i te waitara nui. He takitoru, he takiwhā ngā ohu, he kohi para ki te tōnga rānō o te rā.",
       },
     },
     {
-      id: 19,
+      id: 20,
       text: {
         en: "Throughout the year they work with care, planting, protecting, and restoring what was lost. The forests begin to breathe again. The waters, whirling and twirling once again clear.",
         mi: "Ngākau tapatahi ana te iwi ki te kaupapa, kia matomato anō te tipu o te ngahere, kia toitū te whenua. Ko ngā wai whakaata e kōriporipo ana, e koromiomio ana i te awa o Waioweka.",
       },
     },
     {
-      id: 20,
+      id: 21,
       text: {
         en: "And as the centuries pass by old Te Rimu still remains. Still watching – quiet and wise.",
         mi: "Rautau atu, rautau mai e nonoho tonu ana te koroua a Te Rimu ki tōna awa. He āta tūtei i te iwi ka tomokia tōna rohe.",
       },
     },
     {
-      id: 21,
+      id: 22,
       text: {
         en: "Te Rimu the taniwha, the shape changing tipua. Sometimes he looks like a log… A gigantic, grey, knotty, knobbly old log. And sometimes he looks like an eel… A GINORMOUS bigger than enormous, slippery, slithery, grandpa eel.",
         mi: "He taniwha, he tipua I ētahi wā he poro rākau tōna rite… He kaitā, he kiwikiwi, he pūpeka, he pakoki te poro rākau tawhito. Ā, i ētahi wā he tuna tōna rite…. He tuna matarahi nui ake i te rahi, he pākehokeho, he pāhekeheke te koroua rā.",
       },
     },
     {
-      id: 22,
+      id: 23,
       text: {
         en: "Maybe you have seen him, you just don’t know it.",
         mi: "Tērā pea kua kite kē koe i a ia, engari tē mōhio i a koe.",

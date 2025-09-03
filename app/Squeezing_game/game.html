@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terimu Story Sequencing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+   #story-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;      /* allows multiple rows */
+  gap: 10px;
+  max-width: 900px;
+  margin: auto;
+  justify-content: center;
+}
+
+
+    .card {
+      padding: 5px;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .card img {
+  width: 200px;   /* reduced width */
+  height: 130px;  /* reduced height */
+  object-fit: cover;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.story-text {
+  background-color: rgba(209, 113, 57, 0.8);
+  color: #fff;
+  padding: 4px 8px;   /* slightly smaller padding */
+  border-radius: 5px;
+  width: 90%;
+  text-align: center;
+  font-size: 14px;    /* smaller font */
+}
+
+    .card.dragging {
+      opacity: 0.5;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #result {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Arrange the Terimu Story in the Correct Order</h2>
+
+<div id="story-container"></div>
+<button onclick="checkOrder()">Check Order</button>
+<p id="result"></p>
+
+<script>
+  // Correct order of events (image + text)
+  const correctOrder = [
+    { text: "Te Rimu swims in the Waioweka river", img: "images/1.png" },
+    { text: "Sometimes he looks like a log", img: "images/2.png" },
+    { text: "Sometimes he looks like an eel", img: "images/3.png" },
+    { text: "Aroha sees the log wink at her", img: "images/4.png" },
+    { text: "Te Rimu warns the people about pollution", img: "images/5.png" },
+    { text: "Tawa and the people clean the river", img: "images/6.png" },
+    { text: "The river becomes clean again", img: "images/7.png" }
+  ];
+
+  // Scramble for game start
+  let scrambled = [...correctOrder].sort(() => Math.random() - 0.5);
+
+  const container = document.getElementById("story-container");
+
+  function renderCards() {
+    container.innerHTML = "";
+    scrambled.forEach((event) => {
+      const card = document.createElement("div");
+      card.classList.add("card");
+      card.draggable = true;
+
+      // Add image
+      const img = document.createElement("img");
+      img.src = event.img;
+      img.alt = event.text;
+      card.appendChild(img);
+
+      // Add text with background
+      const p = document.createElement("div");
+      p.classList.add("story-text");
+      p.textContent = event.text;
+      card.appendChild(p);
+
+      // Drag events
+      card.addEventListener("dragstart", () => {
+        card.classList.add("dragging");
+      });
+      card.addEventListener("dragend", () => {
+        card.classList.remove("dragging");
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  container.addEventListener("dragover", e => {
+    e.preventDefault();
+    const dragging = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(container, e.clientY);
+    if (afterElement == null) {
+      container.appendChild(dragging);
+    } else {
+      container.insertBefore(dragging, afterElement);
+    }
+  });
+
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll(".card:not(.dragging)")];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  function checkOrder() {
+    const current = [...container.querySelectorAll(".card .story-text")].map(div => div.textContent);
+    const correct = correctOrder.map(event => event.text);
+    if (JSON.stringify(current) === JSON.stringify(correct)) {
+      document.getElementById("result").textContent = "✅ Ka pai! You got the story right!";
+    } else {
+      document.getElementById("result").textContent = "❌ Try again, Te Rimu’s story is still jumbled.";
+    }
+  }
+
+  renderCards();
+</script>
+</body>
+</html>

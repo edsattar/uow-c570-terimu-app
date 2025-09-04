@@ -9,7 +9,7 @@ import {
   RefreshCcw,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
@@ -27,7 +27,41 @@ export default function Home() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   const minSwipeDistance = 50;
+
+  // Update audio source when page changes
+  useEffect(() => {
+    if (audioRef.current && hasStarted) {
+      const audioFile = `/audio/p${currentPage + 1}.wav`;
+      audioRef.current.src = audioFile;
+      audioRef.current.load();
+    }
+  }, [currentPage, hasStarted]);
+
+  // Handle audio events
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleAudioEnd = () => {
+      setIsPlaying(false);
+    };
+
+    const handleAudioError = () => {
+      setIsPlaying(false);
+      console.log(`Audio file for page ${currentPage + 1} not found`);
+    };
+
+    audio.addEventListener('ended', handleAudioEnd);
+    audio.addEventListener('error', handleAudioError);
+
+    return () => {
+      audio.removeEventListener('ended', handleAudioEnd);
+      audio.removeEventListener('error', handleAudioError);
+    };
+  }, [currentPage]);
 
   // Touch event handlers for swipe detection
   const onTouchStart = (e: React.TouchEvent) => {
@@ -58,15 +92,25 @@ export default function Home() {
   };
 
   const handlePlayPause = () => {
+    if (!audioRef.current) return;
+
     if (isPlaying) {
+      audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      audioRef.current.play().catch((error) => {
+        console.log('Audio play failed:', error);
+        setIsPlaying(false);
+      });
       setIsPlaying(true);
     }
   };
 
   const nextPage = () => {
     if (currentPage < story.pages.length - 1) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       setCurrentPage(currentPage + 1);
       setIsPlaying(false);
     }
@@ -74,12 +118,18 @@ export default function Home() {
 
   const prevPage = () => {
     if (currentPage > 0) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       setCurrentPage(currentPage - 1);
       setIsPlaying(false);
     }
   };
 
   const restartStory = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     setCurrentPage(0);
     setIsPlaying(false);
     setHasStarted(true);
@@ -113,6 +163,9 @@ export default function Home() {
   }
   return (
     <div className="min-h-dvh h-dvh bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-4 flex">
+      {/* Hidden audio element */}
+      <audio ref={audioRef} preload="metadata" />
+      
       <div className="max-w-4xl mx-auto grow flex flex-col">
         {/* Header */}
         <div className="text-center mb-3">
@@ -125,7 +178,13 @@ export default function Home() {
               {story.pages.map((_, index) => (
                 <div
                   key={index}
-                  onClick={() => setCurrentPage(index)}
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.pause();
+                    }
+                    setCurrentPage(index);
+                    setIsPlaying(false);
+                  }}
                   className={`rounded-full hover:bg-purple-300 ${
                     index === currentPage ? "bg-purple-500 size-3" : "bg-gray-300 size-2"
                   }`}

@@ -1,4 +1,4 @@
-import type { Route } from "./+types/game";
+import type { Route } from "./+types/game1";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Card } from "~/components/ui/card";
@@ -14,7 +14,7 @@ type SceneItem = {
 };
 
 const scene = {
-  background: "/img/p3.png",
+  background: "/img/g1.png",
   passage:
     "His home once sparkling crystal clean. Now a junkyard jungle. Creaky, leaky, stinky old furniture and cans and packets all tossed aside. Once lush now bare, scarring landslides, deforestation.",
   interpretation:
@@ -53,7 +53,7 @@ export default function Game() {
           </Button>
         </div>
         <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl shadow-2xl">
-          <img src={scene.background} alt="River scene" className="object-cover w-full h-full" />
+          <img src={scene.background} alt="River scene" className="object-cover object-bottom w-full h-full" />
           {scene.items.map((it) => (
             <button
               key={it.id}

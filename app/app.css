@@ -118,3 +118,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom 3D flip animation for matching game cards */
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}

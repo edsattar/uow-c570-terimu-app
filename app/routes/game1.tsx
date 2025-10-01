@@ -14,7 +14,7 @@ type SceneItem = {
 };
 
 const scene = {
-  background: "/img/g1.png",
+  background: "/img/game1/background.png",
   passage:
     "His home once sparkling crystal clean. Now a junkyard jungle. Creaky, leaky, stinky old furniture and cans and packets all tossed aside. Once lush now bare, scarring landslides, deforestation.",
   interpretation:

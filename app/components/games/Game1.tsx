@@ -9,20 +9,29 @@ type SceneItem = {
   y: number; // percentage 0-100
   correct: boolean;
   kind: "pill" | "triangle" | "circle" | "diamond";
+  size: number; // px
+  scale?: number; // extra scale to compensate transparent padding
 };
 
 const scene = {
-  background: "/img/g1.png",
+  background: "/img/game1/background.png",
   passage:
     "His home once sparkling crystal clean. Now a junkyard jungle. Creaky, leaky, stinky old furniture and cans and packets all tossed aside. Once lush now bare, scarring landslides, deforestation.",
   interpretation:
-    "Te Rimu tells us the river and he are one. In this scene, the river suffers from pollution and neglect. Te Rimu remains present and watchful, often blending into the river as a piece of driftwood. That's why the driftwood log is the correct choice here.",
+    "Te Rimu tells us the river and he are one. In this polluted river scene, Te Rimu can take natural forms such as an eel. Based on the story’s sequence and clues, the eel fits best here, so it is the correct choice.",
   items: [
-    { id: "log", label: "Driftwood log", x: 22, y: 68, correct: true, kind: "pill" },
-    { id: "eel", label: "Eel", x: 70, y: 40, correct: false, kind: "triangle" },
-    { id: "stone", label: "River stone", x: 48, y: 75, correct: false, kind: "circle" },
-    { id: "leaf", label: "Leaf", x: 82, y: 28, correct: false, kind: "diamond" },
+    { id: "log", label: "Driftwood log", x: 75, y: 48, correct: false, kind: "pill", size: 140 },
+    { id: "eel", label: "Eel", x: 75, y: 64, correct: true, kind: "triangle", size: 92 },
+    { id: "stone", label: "River stone", x: 85, y: 80, correct: false, kind: "circle", size: 118 },
+    { id: "leaf", label: "Leaf", x: 42, y: 58, correct: false, kind: "diamond", size: 72 },
   ] as SceneItem[],
+};
+
+const ICONS: Record<SceneItem["id"], string> = {
+  log: "/img/game1/log.png",
+  eel: "/img/game1/eel.png",
+  stone: "/img/game1/stone.png",
+  leaf: "/img/game1/leaf.png",
 };
 
 interface Game1Props {
@@ -71,22 +80,13 @@ export default function Game1({ onGameComplete }: Game1Props) {
               style={{ left: `${it.x}%`, top: `${it.y}%` }}
               className="absolute -translate-x-1/2 -translate-y-1/2"
             >
-              {it.kind === "pill" ? (
-                <div className="w-14 h-8 rounded-full bg-amber-700/70 border-2 border-white shadow-sm hover:scale-105 active:scale-95 transition" />
-              ) : it.kind === "triangle" ? (
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  className="drop-shadow-sm hover:scale-105 active:scale-95 transition"
-                >
-                  <polygon points="16,2 30,30 2,30" fill="rgb(59 130 246 / 0.7)" stroke="white" strokeWidth="2" />
-                </svg>
-              ) : it.kind === "circle" ? (
-                <div className="w-12 h-12 rounded-full bg-gray-500/70 border-2 border-white shadow-sm hover:scale-105 active:scale-95 transition" />
-              ) : (
-                <div className="w-10 h-10 bg-green-600/70 border-2 border-white shadow-sm rotate-45 hover:scale-105 active:scale-95 transition" />
-              )}
+              <img
+                src={ICONS[it.id]}
+                alt={it.label}
+                style={{ width: `${it.size}px`, height: `${it.size}px}`, ...(it.scale ? { transform: `scale(${it.scale})` } : {}) }}
+                className="object-contain drop-shadow-sm transition-transform hover:scale-105 active:scale-95"
+                draggable={false}
+              />
             </button>
           ))}
         </div>
@@ -133,8 +133,8 @@ export default function Game1({ onGameComplete }: Game1Props) {
             <Card className="w-[min(92vw,520px)] p-5">
               <h3 className="text-lg font-semibold">How to Play</h3>
               <div className="mt-3 text-sm text-gray-700 space-y-2">
-                <p>Te Rimu can take many forms. In this scene, tap on one of the visible shapes placed on the image to guess what Te Rimu disguises as.</p>
-                <p>If you're correct, you'll be congratulated. You can also choose to read an explanation. If you guess wrong, try again or open the explanation for clues.</p>
+                <p>After reading the story, find how Te Rimu is disguised in this scene. Tap a shape directly on the image to make your choice.</p>
+                <p>You'll get immediate feedback. At any time, use “Read explanation” to view the relevant passage and a short interpretation.</p>
               </div>
               <div className="mt-5 flex justify-end">
                 <Button variant="outline" onClick={() => setShowHelp(false)}>Close</Button>
